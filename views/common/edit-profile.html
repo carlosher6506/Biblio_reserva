@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Perfil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="position-fixed vh-100 bg-dark text-white d-flex flex-column p-3 sidebar d-none">
+        <div class="text-center mb-4">
+            <a href="/dashboard">
+                <img src="/img/logo_1.png" alt="Foto de perfil" class="rounded-circle mb-2 user-img" style="width: 80px; height: 80px;">
+            </a>
+            <h6 id="user-name-sidebar">Usuario</h6>
+        </div>
+        <nav class="nav flex-column flex-grow-1">
+            <a class="nav-link text-white d-flex align-items-center mb-2" href="/dashboard">
+                <i class="fas fa-home me-2"></i> Inicio
+            </a>
+            <a class="nav-link text-white d-flex align-items-center mb-2" href="/reserve">
+                <i class="fas fa-calendar-plus me-2"></i> Reservar
+            </a>
+            <a class="nav-link text-white d-flex align-items-center mb-2" href="/reservations/manage">
+                <i class="fas fa-list me-2"></i> Administrar Reservas
+            </a>
+            <a class="nav-link text-white d-flex align-items-center mb-2" href="/my-reservations">
+                <i class="fas fa-list me-2"></i> Mis Reservas
+            </a>
+            <a class="nav-link text-white d-flex align-items-center mb-2" href="/profile/edit">
+                <i class="fas fa-user-edit me-2"></i> Editar Perfil
+            </a>
+            <a class="nav-link text-white d-flex align-items-center mb-2" href="/users/manage">
+                <i class="fas fa-users me-2"></i> Administrar Cuentas
+            </a>
+            <hr class="text-secondary">
+            <a class="nav-link text-white d-flex align-items-center mt-auto" href="/logout">
+                <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+            </a>
+        </nav>
+    </aside>
+    <!-- Overlay -->
+    <div id="overlay" class="position-fixed top-0 start-0 w-100 h-100 overlay d-none"></div>
+    <!-- Botón toggle -->
+    <button id="sidebarToggle" class="btn btn-primary rounded-circle position-fixed top-0 start-0 m-3" aria-label="Abrir o cerrar menú">
+        <i class="fas fa-bars"></i>
+    </button>
+    <main class="container-fluid p-4 flex-grow-1" id="main-content">
+        <div class="card shadow-sm p-4 mx-auto" style="max-width: 600px;">
+            <h3 class="mb-4 text-center">Editar Perfil</h3>
+            
+            <!-- Mensaje de éxito/error -->
+            <div id="profile-message" class="alert d-none" role="alert"></div>
+
+            <!-- Foto del usuario con hover para opciones -->
+            <div class="text-center mb-4 photo-container">
+                <img id="profile-image" src="/img/default-profile.png" alt="Foto de perfil" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                <div class="photo-options d-flex flex-column gap-2">
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#viewPhotoModal">Ver</button>
+                    <button class="btn btn-sm btn-secondary" onclick="document.getElementById('profileImageInput').click();">Cambiar la foto</button>
+                </div>
+                <input type="file" class="d-none" id="profileImageInput" name="profileImage" accept="image/jpeg,image/png">
+            </div>
+
+            <form id="profileForm">
+                <div class="mb-3 position-relative">
+                    <input type="text" class="form-control" id="name" name="name" placeholder=" " required>
+                    <label for="name" class="form-label position-absolute top-0 start-0 translate-middle-y ps-2">Nombre</label>
+                </div>
+                <div class="mb-3 position-relative">
+                    <input type="email" class="form-control" id="email" name="email" placeholder=" " required>
+                    <label for="email" class="form-label position-absolute top-0 start-0 translate-middle-y ps-2">Correo Electrónico</label>
+                </div>
+                <div class="mb-3 position-relative">
+                    <input type="password" class="form-control" id="current-password-display" value="********" disabled>
+                    <label for="current-password-display" class="form-label position-absolute top-0 start-0 translate-middle-y ps-2">Contraseña Actual</label>
+                </div>
+                <button type="button" class="btn btn-secondary w-100 mb-3" id="changePasswordBtn" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="fas fa-key me-2"></i> Cambiar Contraseña
+                </button>
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-2"></i> Guardar Cambios</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Modal para Cambiar Contraseña -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordLabel">Cambiar Contraseña</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="password-message" class="alert d-none" role="alert"></div>
+                    <form id="changePasswordForm">
+                        <div class="mb-3 password-container">
+                            <label for="currentPassword" class="form-label">Contraseña Actual</label>
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            <i class="fas fa-eye password-toggle" id="toggleCurrentPassword"></i>
+                        </div>
+                        <div class="mb-3 password-container">
+                            <label for="newPassword" class="form-label">Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <i class="fas fa-eye password-toggle" id="toggleNewPassword"></i>
+                        </div>
+                        <div class="mb-3 password-container">
+                            <label for="confirmNewPassword" class="form-label">Confirmar Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+                            <i class="fas fa-eye password-toggle" id="toggleConfirmNewPassword"></i>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Guardar Nueva Contraseña</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Ver Foto Completa -->
+    <div class="modal fade" id="viewPhotoModal" tabindex="-1" aria-labelledby="viewPhotoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewPhotoLabel">Foto de Perfil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="full-profile-image" src="/img/default-profile.png" alt="Foto completa" style="max-width: 100%; max-height: 80vh; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirmar Cambios</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas guardar los cambios?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmSave">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-3 mt-auto">
+        <div class="container d-flex justify-content-between align-items-center">
+            <p class="mb-0">&copy; 2025 Sistema de Reservas. Todos los derechos reservados.</p>
+            <img src="/img/Gohe.png" alt="Logo del autor" class="img-fluid footer-logo">
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.w3schools.com/lib/w3.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="js/sidebar"></script>
+    <script>
+        w3.includeHTML(() => {
+            let confirmAction = null;
+
+            // Cargar datos iniciales del usuario
+            fetch('/user', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    document.getElementById('name').value = data.name || '';
+                    document.getElementById('email').value = data.email || '';
+                    if (data.profileImage) {
+                        document.getElementById('profile-image').src = data.profileImage;
+                        document.getElementById('full-profile-image').src = data.profileImage;
+                        document.querySelector('.user-img').src = data.profileImage;
+                        document.getElementById('user-name-sidebar').textContent = data.name || 'Usuario';
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando datos:', err.message);
+                alert('Error al cargar los datos del usuario');
+            });
+
+            // Vista previa de la foto
+            const profileImageInput = document.getElementById('profileImageInput');
+            const profileImage = document.getElementById('profile-image');
+            profileImageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        profileImage.src = event.target.result;
+                        document.getElementById('full-profile-image').src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Mostrar/ocultar contraseñas
+            const togglePasswordButtons = document.querySelectorAll('.password-toggle');
+            togglePasswordButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const input = button.previousElementSibling;
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        button.classList.remove('fa-eye');
+                        button.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        button.classList.remove('fa-eye-slash');
+                        button.classList.add('fa-eye');
+                    }
+                });
+            });
+
+            // Guardar cambios principales con confirmación
+            const profileForm = document.getElementById('profileForm');
+            profileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                confirmModal.show();
+
+                const formData = new FormData();
+                formData.append('name', document.getElementById('name').value);
+                formData.append('email', document.getElementById('email').value);
+                if (profileImageInput.files[0]) {
+                    formData.append('profileImage', profileImageInput.files[0]);
+                }
+
+                confirmAction = async () => {
+                    try {
+                        const res = await fetch('/profile/update', {
+                            method: 'POST',
+                            credentials: 'include',
+                            body: formData
+                        });
+                        const messageDiv = document.getElementById('profile-message');
+                        if (res.ok) {
+                            messageDiv.classList.remove('d-none', 'alert-danger');
+                            messageDiv.classList.add('alert-success');
+                            messageDiv.textContent = 'Cambios guardados exitosamente';
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            const errorData = await res.json();
+                            messageDiv.classList.remove('d-none', 'alert-success');
+                            messageDiv.classList.add('alert-danger');
+                            messageDiv.textContent = errorData.error || 'Error al guardar cambios';
+                            confirmModal.hide();
+                            document.getElementById('changePasswordBtn').focus();
+                        }
+                    } catch (err) {
+                        console.error('Error guardando perfil:', err.message);
+                        const messageDiv = document.getElementById('profile-message');
+                        messageDiv.classList.remove('d-none', 'alert-success');
+                        messageDiv.classList.add('alert-danger');
+                        messageDiv.textContent = 'Error al guardar cambios: ' + err.message;
+                        confirmModal.hide();
+                        document.getElementById('changePasswordBtn').focus();
+                    }
+                };
+            });
+
+            // Guardar cambio de contraseña con confirmación
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            changePasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(changePasswordForm);
+                const data = Object.fromEntries(formData.entries());
+
+                const currentPassword = (data.currentPassword || '').trim();
+                const newPassword = (data.newPassword || '').trim();
+                const confirmNewPassword = (data.confirmNewPassword || '').trim();
+
+                console.log('Datos enviados a /profile/change-password:', {
+                    currentPassword,
+                    newPassword,
+                    confirmNewPassword
+                });
+
+                if (!currentPassword || !newPassword || !confirmNewPassword) {
+                    const messageDiv = document.getElementById('password-message');
+                    messageDiv.classList.remove('d-none', 'alert-success');
+                    messageDiv.classList.add('alert-danger');
+                    messageDiv.textContent = 'Todos los campos de contraseña son obligatorios';
+                    return;
+                }
+
+                if (newPassword !== confirmNewPassword) {
+                    const messageDiv = document.getElementById('password-message');
+                    messageDiv.classList.remove('d-none', 'alert-success');
+                    messageDiv.classList.add('alert-danger');
+                    messageDiv.textContent = 'Las nuevas contraseñas no coinciden';
+                    return;
+                }
+
+                const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                confirmModal.show();
+
+                confirmAction = async () => {
+                    try {
+                        const res = await fetch('/profile/change-password', {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ currentPassword, newPassword, confirmNewPassword })
+                        });
+                        const messageDiv = document.getElementById('password-message');
+                        if (res.ok) {
+                            messageDiv.classList.remove('d-none', 'alert-danger');
+                            messageDiv.classList.add('alert-success');
+                            messageDiv.textContent = 'Contraseña cambiada exitosamente';
+                            setTimeout(() => {
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                                modal.hide();
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            const errorData = await res.json();
+                            messageDiv.classList.remove('d-none', 'alert-success');
+                            messageDiv.classList.add('alert-danger');
+                            messageDiv.textContent = errorData.error || 'Error al cambiar contraseña';
+                            confirmModal.hide();
+                            document.getElementById('changePasswordBtn').focus();
+                        }
+                    } catch (err) {
+                        console.error('Error cambiando contraseña:', err.message);
+                        const messageDiv = document.getElementById('password-message');
+                        messageDiv.classList.remove('d-none', 'alert-success');
+                        messageDiv.classList.add('alert-danger');
+                        messageDiv.textContent = 'Error al cambiar contraseña: ' + err.message;
+                        confirmModal.hide();
+                        document.getElementById('changePasswordBtn').focus();
+                    }
+                };
+            });
+
+            // Asignar acción al botón Confirmar
+            document.getElementById('confirmSave').addEventListener('click', () => {
+                if (confirmAction) confirmAction();
+            });
+
+            // Mover foco al cerrar el modal de confirmación
+            const confirmModalEl = document.getElementById('confirmModal');
+            confirmModalEl.addEventListener('hidden.bs.modal', () => {
+                document.getElementById('changePasswordBtn').focus();
+            });
+        });
+    </script>
+</body>
+</html>
