@@ -12,38 +12,22 @@
 <body class="d-flex flex-column min-vh-100">
     
     <!-- Sidebar (Modal) -->
-    <aside id="sidebar" class="position-fixed vh-100 bg-dark text-white d-flex flex-column p-3 sidebar d-none">
-        <div class="text-center mb-4">
-            <a href="/dashboard">
-                <img id="sidebar-user-img" src="/img/default-profile.png" alt="Foto de perfil" class="rounded-circle mb-2 user-img" style="width: 80px; height: 80px;">
-            </a>
-            <h6 id="user-name-sidebar">Usuario</h6>
-        </div>
-        <nav class="nav flex-column flex-grow-1">
-            <a class="nav-link text-white d-flex align-items-center mb-2" href="/dashboard">
-                <i class="fas fa-home me-2"></i> Inicio
-            </a>
-            <a class="nav-link text-white d-flex align-items-center mb-2" href="/reserve">
-                <i class="fas fa-calendar-plus me-2"></i> Reservar
-            </a>
-            <a class="nav-link text-white d-flex align-items-center mb-2" href="/reservations/manage">
-                <i class="fas fa-list me-2"></i> Administrar Reservas
-            </a>
-            <a class="nav-link text-white d-flex align-items-center mb-2" href="/my-reservations">
-                <i class="fas fa-list me-2"></i> Mis Reservas
-            </a>
-            <a class="nav-link text-white d-flex align-items-center mb-2" href="/profile/edit">
-                <i class="fas fa-user-edit me-2"></i> Editar Perfil
-            </a>
-            <a class="nav-link text-white d-flex align-items-center mb-2" href="/users/manage">
-                <i class="fas fa-users me-2"></i> Administrar Cuentas
-            </a>
-            <hr class="text-secondary">
-            <a class="nav-link text-white d-flex align-items-center mt-auto" href="/logout">
-                <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
-            </a>
-        </nav>
-    </aside>
+<!-- Sidebar (dinámico) -->
+<aside id="sidebar" class="position-fixed vh-100 bg-dark text-white d-flex flex-column p-3 sidebar d-none">
+    <div class="text-center mb-4">
+        <a href="/dashboard">
+            <img id="sidebar-user-img" src="/img/default-profile.png" alt="Foto de perfil"
+                class="rounded-circle mb-2 user-img" style="width: 80px; height: 80px;">
+        </a>
+        <h6 id="user-name-sidebar">Usuario</h6>
+    </div>
+    <nav class="nav flex-column flex-grow-1"></nav>
+    <hr class="text-secondary">
+    <a class="nav-link text-white d-flex align-items-center mt-auto" href="/logout">
+        <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+    </a>
+</aside>
+
 
 
     <!-- Overlay -->
@@ -194,6 +178,110 @@
                 tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error cargando reservas</td></tr>`;
             }
         }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    // Toggle sidebar
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    }
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('active');
+        sidebar.classList.remove('d-none');
+        overlay.classList.toggle('active');
+        overlay.classList.toggle('d-none');
+
+        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    }
+
+    // Cargar usuario y configurar menú
+    loadUserDataAndConfigureMenu();
+});
+
+async function loadUserDataAndConfigureMenu() {
+    try {
+        const res = await fetch('/user', { credentials: 'include' });
+        if (!res.ok) throw new Error('Error al obtener usuario');
+        const data = await res.json();
+
+        // Datos de usuario
+        const sidebarName = document.getElementById('user-name-sidebar');
+        if (sidebarName) sidebarName.textContent = data.name || 'Usuario';
+
+        const sidebarImg = document.getElementById('sidebar-user-img');
+        if (sidebarImg) sidebarImg.src = data.profileImage || '/img/default-profile.png';
+
+        // Configurar menú
+        configureMenuByRole(data.role || 'teacher');
+
+        // Clase en body según rol
+        document.body.classList.add(`role-${data.role}`);
+    } catch (err) {
+        console.error('Error cargando datos del usuario:', err);
+        configureMenuByRole('teacher');
+    }
+}
+
+function configureMenuByRole(role) {
+    const menuItems = {
+        teacher: [
+            { href: '/dashboard', icon: 'fa-home', text: 'Inicio' },
+            { href: '/my-reservations', icon: 'fa-list', text: 'Mis Reservas' },
+            { href: '/profile/edit', icon: 'fa-user-edit', text: 'Editar Perfil' }
+        ],
+        admin: [
+            { href: '/dashboard', icon: 'fa-home', text: 'Inicio' },
+            { href: '/reserve', icon: 'fa-calendar-plus', text: 'Reservar' },
+            { href: '/reservations/manage', icon: 'fa-list', text: 'Administrar Reservas' },
+            { href: '/my-reservations', icon: 'fa-list', text: 'Mis Reservas' },
+            { href: '/profile/edit', icon: 'fa-user-edit', text: 'Editar Perfil' },
+            { href: '/users/manage', icon: 'fa-users', text: 'Administrar Cuentas' },
+            { href: '/news/manage', icon: 'fa-newspaper', text: 'Gestionar Noticias' }
+        ],
+        superadmin: [
+            { href: '/dashboard', icon: 'fa-home', text: 'Inicio' },
+            { href: '/reserve', icon: 'fa-calendar-plus', text: 'Reservar' },
+            { href: '/reservations/manage', icon: 'fa-list', text: 'Administrar Reservas' },
+            { href: '/my-reservations', icon: 'fa-list', text: 'Mis Reservas' },
+            { href: '/profile/edit', icon: 'fa-user-edit', text: 'Editar Perfil' },
+            { href: '/users/manage', icon: 'fa-users', text: 'Administrar Cuentas' },
+            { href: '/news/manage', icon: 'fa-newspaper', text: 'Gestionar Noticias' }
+        ]
+    };
+
+    const sidebarNav = document.querySelector('#sidebar nav');
+    if (!sidebarNav) return;
+
+    // Limpiar menú actual
+    sidebarNav.innerHTML = '';
+
+    // Agregar items según rol
+    const items = menuItems[role] || menuItems.teacher;
+    items.forEach(item => {
+        const link = document.createElement('a');
+        link.className = 'nav-link text-white d-flex align-items-center mb-2';
+        link.href = item.href;
+        link.innerHTML = `<i class="fas ${item.icon} me-2"></i> ${item.text}`;
+
+        // Resaltar activo
+        if (window.location.pathname === item.href) {
+            link.classList.add('active');
+            link.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+        }
+
+        sidebarNav.appendChild(link);
+    });
+}
+
+        
     </script>
 </body>
 </html>
