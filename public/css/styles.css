@@ -161,13 +161,12 @@ body {
 .carousel,
 .carousel-item,
 .carousel-item img {
-  height: 75vh; /* más corto */
+  height: 87vh; /* más corto */
 }
 
 .carousel {
-  border-radius: 12px;
-  margin: 20px auto;
-  max-width: 95%;
+  border-radius: 6px;
+  margin: 5px auto;
   overflow: hidden;
   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
@@ -183,11 +182,6 @@ body {
 .carousel-image:hover {
   filter: brightness(95%);
   transform: scale(1.05);
-}
-
-/* Quitar captions */
-.carousel-caption {
-  display: none !important;
 }
 
 /* Controles más elegantes */
