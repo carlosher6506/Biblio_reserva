@@ -190,34 +190,47 @@ router.get('/dashboard', authController.verifyToken, (req, res) => {
 router.get('/profile/edit', authController.verifyToken, (req, res) => res.sendFile('views/common/edit-profile.html', { root: __dirname + '/../' }));
 router.post('/profile/update', authController.verifyToken, upload, handleMulterError, async (req, res) => {
     try {
-        console.log('Procesando /profile/update, req.body:', req.body, 'req.file:', req.file);
+        console.log('Procesando /profile/update');
         const user = await User.findById(req.user.id);
+        
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        if (req.file && user.profileImage) {
-            const oldImagePath = path.join(__dirname, '..', 'public', 'img', user.profileImage);
-            try {
-                await fs.access(oldImagePath);
-                await fs.unlink(oldImagePath);
-                console.log('Imagen anterior eliminada:', user.profileImage);
-            } catch (err) {
-                if (err.code !== 'ENOENT') {
-                    console.error('Error eliminando imagen anterior:', err.message);
-                }
-            }
-        }
+
+        // Actualizar nombre y email
         user.name = req.body.name || user.name;
         user.email = req.body.email || user.email;
+
+        // Si hay nueva imagen, convertir a base64
         if (req.file) {
-            user.profileImage = req.file.filename;
-            console.log('Imagen de perfil guardada:', user.profileImage);
+            const fs = require('fs').promises;
+            const imagePath = req.file.path;
+            
+            try {
+                // Leer la imagen y convertir a base64
+                const imageBuffer = await fs.readFile(imagePath);
+                const base64Image = `data:${req.file.mimetype};base64,${imageBuffer.toString('base64')}`;
+                
+                // Guardar en MongoDB
+                user.profileImage = base64Image;
+                
+                // Eliminar archivo temporal del servidor
+                await fs.unlink(imagePath);
+                console.log('Imagen convertida a base64 y archivo temporal eliminado');
+                
+            } catch (err) {
+                console.error('Error procesando imagen:', err);
+                return res.status(500).json({ error: 'Error procesando la imagen' });
+            }
         }
+
         await user.save();
+        
         res.json({
             message: 'Perfil actualizado exitosamente',
-            profileImage: user.profileImage ? `/img/${user.profileImage}` : null
+            profileImage: user.profileImage // Enviamos el base64 completo
         });
+
     } catch (err) {
         console.error('Error actualizando perfil:', err.message);
         res.status(500).json({ error: err.message || 'Error del servidor' });
@@ -260,17 +273,21 @@ router.post('/users/delete/:id', authController.verifyToken, authController.veri
 router.get('/user', authController.verifyToken, async (req, res) => {
     try {
         const user = await User.findById(req.user.id, 'name email profileImage role');
+        
         if (!user) {
             console.error('Usuario no encontrado para ID:', req.user.id);
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        console.log('Datos del usuario enviados:', user);
+
+        console.log('Usuario encontrado:', user.name, 'Tiene imagen:', !!user.profileImage);
+
         res.json({
             name: user.name,
             email: user.email,
-            profileImage: user.profileImage ? `/img/${user.profileImage}` : null,
+            profileImage: user.profileImage || null, // Base64 completo o null
             role: user.role
         });
+
     } catch (err) {
         console.error('Error obteniendo usuario:', err);
         res.status(500).json({ error: 'Error del servidor' });

@@ -60,6 +60,18 @@
     </div>
 
     <script>
+        // Protección mejorada contra botón atrás: Agregar entrada extra al historial y redirigir en popstate
+        window.addEventListener('load', function() {
+            // Agrega una entrada dummy al historial para "atrapar" el back button
+            history.pushState(null, null, location.href);
+        });
+
+        window.addEventListener('popstate', function(event) {
+            // Si intenta ir atrás, empuja de nuevo y redirige a login para bloquear
+            history.pushState(null, null, location.href);
+            window.location.replace('/'); // O '/' si tu login está en la raíz
+        });
+
         // Mostrar mensaje de error con duración
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('error')) {

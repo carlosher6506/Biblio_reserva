@@ -20,8 +20,8 @@ const userSchema = new mongoose.Schema({
         default: 'teacher'
     },
     profileImage: {
-        type: String,
-        default: '/img/default-profile.png'
+        type: String,  // Almacenará base64 o URL data:image
+        default: null
     }
 });
 
