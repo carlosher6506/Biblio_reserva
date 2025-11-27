@@ -349,3 +349,61 @@ main h3 {
     margin-left: 50px; /* deja espacio para el botón del menú */
     font-weight: 600;
 }
+
+/* Estilos adicionales para el menú de iconos */
+    .active-menu-item .card {
+      border: 2px solid #0d6efd;
+      background-color: rgba(13, 110, 253, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+      #menu-icons-section h2 {
+        font-size: 1.5rem;
+      }
+      
+      .card h6 {
+        font-size: 0.9rem;
+      }
+    }
+
+/* foto de perfil*/
+    .profile-image-container {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 5px solid #0d6efd;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      background-color: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .profile-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .profile-image-container .default-avatar {
+      font-size: 80px;
+      color: #6c757d;
+    }
+    
+    .welcome-section {
+      text-align: center;
+      margin: 30px 0 20px 0;
+    }
+    
+    .welcome-section h2 {
+      font-size: 2rem;
+      color: #2c3e50;
+      margin-bottom: 25px;
+      font-weight: 600;
+    }
+    
+    #menu-icons-section {
+      margin-top: 40px;
+    }
